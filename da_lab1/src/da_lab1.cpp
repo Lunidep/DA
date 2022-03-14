@@ -2,11 +2,22 @@
 #include <ctime>
 #include <vector>
 #include <string>
+#include <cstring>
+
+
+const int NUMBER_OF_DIGIT = 32;
 
 typedef unsigned long long ull;
 typedef struct TData {
-    char key[33];
-    char str[2048];
+    char key[NUMBER_OF_DIGIT + 1];
+    char* str;
+
+    TData& operator= (const TData& tmp) {
+        for (int i = 0; i < NUMBER_OF_DIGIT; i++)
+            this->key[i] = tmp.key[i];
+        str = tmp.str;
+        return *this;
+    }
 } TData;
 
 
@@ -19,10 +30,10 @@ std::ostream& operator<< (std::ostream& out, const TData& td) {
 const size_t CONVERT_CONST_TO_HEX_SISTEM = 10;
 
 int CharToNum(int inc_idx) {
-    if ('a' <= inc_idx && inc_idx <= 'f') {                 //letter
+    if ('a' <= inc_idx && inc_idx <= 'f')  {             //letter
         return inc_idx - 'a' + CONVERT_CONST_TO_HEX_SISTEM;
     }
-    else if ('0' <= inc_idx && inc_idx <= '9'){             //number
+    else if ('0' <= inc_idx && inc_idx <= '9')  {        //number
         return inc_idx - '0';
     }
     return 0;
@@ -31,14 +42,12 @@ int CharToNum(int inc_idx) {
 
 const size_t SIZE_OF_COUNTING_MASSIVE = 16;
 
-void CountingSort(std::vector<TData>* vec, size_t digit_num) {
-    TData res[vec->size()];
-    size_t count[SIZE_OF_COUNTING_MASSIVE] = { 0 };
+void CountingSort(std::vector<TData>& v_data, size_t digit_num) {
+    std::vector<TData> res(v_data.size());
+    ull count[SIZE_OF_COUNTING_MASSIVE] = { 0 };
 
-    for (size_t i = 0; i < vec->size(); i++) {
-        TData tmp = (*vec)[i];
-        size_t incremental_idx = tmp.key[digit_num];
-
+    for (size_t i = 0; i < v_data.size(); i++) {
+        size_t incremental_idx = v_data[i].key[digit_num];
         count[CharToNum(incremental_idx)]++;
     }
 
@@ -46,29 +55,24 @@ void CountingSort(std::vector<TData>* vec, size_t digit_num) {
         count[i] += count[i - 1];
     }
 
-    for (int i = vec->size() - 1; i >= 0; i--) {
-        TData tmp = (*vec)[i];
-        size_t sort_num = tmp.key[digit_num];
-
-        size_t idx = CharToNum(sort_num);
-        
-        res[count[idx] - 1] = (*vec)[i];
-
+    for (int i = v_data.size() - 1; i >= 0; i--) {
+        size_t idx = CharToNum(v_data[i].key[digit_num]);
+        res[count[idx] - 1] = v_data[i];
         count[idx]--;
     }
 
-    for (int i = 0; i < vec->size(); i++){
-        (*vec)[i] = res[i];
+    v_data = res;
+}
+
+
+void RadixSort(std::vector<TData>& v_data) {
+    for (int digit_num = NUMBER_OF_DIGIT - 1; digit_num >= 0; digit_num--) {
+        CountingSort(v_data, digit_num);
     }
 }
 
 
-void RadixSort(std::vector<TData>* vec) {
-    for (int digit_num = 31; digit_num >= 0; digit_num--) {
-        CountingSort(vec, digit_num);
-    }
-}
-
+const int LENGTH_OF_STRING = 2048;
 
 int main() {
     std::ios::sync_with_stdio(false);
@@ -76,17 +80,23 @@ int main() {
     std:: cout.tie(nullptr);
 
     TData tmp;
-    std::vector<TData> v;
-    while (std::cin >> tmp.key && std::cin >> tmp.str) {
-        v.push_back(tmp);
+    std::vector<TData> v_data;
+
+    while (scanf("%s", tmp.key) != EOF) {
+        tmp.str = new char[LENGTH_OF_STRING + 1];
+        scanf("%s", tmp.str);
+        tmp.str = (char *)realloc(tmp.str, sizeof(char) * (strlen(tmp.str) + 1));         
+        v_data.push_back(std::move(tmp));
     }
 
-    if (v.size() != 0) {
-        RadixSort(&v);
+
+    if (v_data.size()) {
+        RadixSort(v_data);
     }
 
-    for (TData tmp : v) {
+    for (TData tmp : v_data) {
         std::cout << tmp;
     }
+
     return 0;
 }

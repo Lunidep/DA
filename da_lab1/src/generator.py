@@ -10,7 +10,7 @@ def generate_pair():
     key = "".join([random.choice(hex_sis_letters + string.digits) for _ in range(key_len)])
 
 
-    string_len = random.randint(1, 2048)
+    string_len = random.randint(1,2048)
     value = "".join([random.choice(string.ascii_letters + string.digits) for _ in range(string_len)])
 
     return(key, value)

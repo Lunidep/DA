@@ -25,11 +25,12 @@ function log_()
 
 function main(){
 
+	local prog=da_lab1.cpp
 	local bin=da_lab1
 
 	log_info "Stage #1. Compiling..."
 
-	if ! g++ -std=c++17 da_lab1.cpp -o ${bin} ; then
+	if ! g++ -std=c++17 ${prog} -o ${bin} ; then
 		log_error "Failed to compile da_lab1.cpp"
 		return 1
 	fi
@@ -41,7 +42,7 @@ function main(){
 	rm -rf ${TESTS_DIR}
 	mkdir ${TESTS_DIR}
 
-	local count_of_tests=100
+	local count_of_tests=10
 	if ! ./generator.py ${TESTS_DIR} ${count_of_tests} ; then
 		log_error "Failed to test generating tests"
 		return 1
