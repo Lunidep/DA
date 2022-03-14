@@ -1,0 +1,158 @@
+\section{Описание}
+
+Интернет-ресурс \cite{wikipedia_radix_sort} дает следующее описание алгоритма сортировки подсчетом:
+
+
+Алгоритм сортировки подсчетом предназначен для сортировки целых чисел, записанных цифрами. Но так как в памяти компьютеров любая информация записывается целыми числами, алгоритм пригоден для сортировки любых объектов, запись которых можно поделить на \enquote{разряды}, содержащие сравнимые значения. Например, так сортировать можно не только числа, записанные в виде набора цифр, но и строки, являющиеся набором символов, и вообще произвольные значения в памяти, представленные в виде набора байт.
+
+Сравнение производится поразрядно: сначала сравниваются значения одного крайнего разряда, и элементы группируются по результатам этого сравнения, затем сравниваются значения следующего разряда, соседнего, и элементы либо упорядочиваются по результатам сравнения значений этого разряда внутри образованных на предыдущем проходе групп, либо переупорядочиваются в целом, но сохраняя относительный порядок, достигнутый при предыдущей сортировке. Затем аналогично делается для следующего разряда, и так до конца.
+
+Так как выравнивать сравниваемые записи относительно друг друга можно в разную сторону, на практике существуют два варианта этой сортировки. Для чисел они называются в терминах значимости разрядов числа, и получается так: можно выровнять записи чисел в сторону менее значащих цифр (по правой стороне, в сторону единиц, least significant digit, LSD) или более значащих цифр (по левой стороне, со стороны более значащих разрядов, most significant digit, MSD).
+
+При LSD сортировке (сортировке с выравниванием по младшему разряду, направо, к единицам) получается порядок, уместный для чисел. Например: 1, 2, 9, 10, 21, 100, 200, 201, 202, 210. То есть, здесь значения сначала сортируются по единицам, затем сортируются по десяткам, сохраняя отсортированность по единицам внутри десятков, затем по сотням, сохраняя отсортированность по десяткам и единицам внутри сотен, и т. п.
+
+При MSD сортировке (с выравниванием в сторону старшего разряда, налево), получается алфавитный порядок, который уместен для сортировки строк текста. Например \enquote{b, c, d, e, f, g, h, i, j, ba} отсортируется как \enquote{b, ba, c, d, e, f, g, h, i, j}. Если MSD применить к числам, приведённым в примере получим последовательность 1, 10, 100, 2, 200, 201, 202, 21, 210, 9.
+
+Накапливать при каждом проходе сведения о группах можно разными способами — например в списках, в деревьях, в массивах, выписывая в них либо сами элементы, либо их индексы и т. п.
+
+\pagebreak
+
+\section{Исходный код}
+Здесь должно быть подробное описание программы и основные этапы написания кода.
+
+На каждой непустой строке входного файла располагается пара \enquote{ключ-значение}, поэтому создадим новую 
+структуру $KV$, в которой будем хранить ключ и значение. И так далее.
+
+Метод решения
+Для совместного хранения ключей и значений, создана структура $TData$ (она состоит из массива $char[33]$ и $char*$ для хранения ключа и значения соответственно). Считываю данные и добавляю их в вектор, который в последствии передаю в функцию поразрядной сортировки $RadixSort$ (про считывание будет написано ниже). Данная функция использует в себе сортировку подсчётом, сортируя последовательно разряды моего 32-разрядного ключа от меньшего к большему. Сортировка подсчётом ($CountingSort$) реализована по стандартному алгоритму:
+\begin{enumerate}
+    \item Создаем вспомогательный массив $count$ размером, равным максимально допустимому числу в сортировке, в данном случае – это число f (16), и инициализуем его нулями;
+    \item Инкрементируем в нем элементы, индексы которых равны рассматриваемым разрядам сортируемых чисел;
+    \item Запускаем префикс-функцию внутри массива $count$;
+    \item Идём справа налево по исходному вектору и сопоставляя элемент с числом вхождений этого элемента (указанным в массиве count) устанавливаем его на нужное место в результирующем векторе.
+\end{enumerate}
+$CountingSort$ в свою очередь использует функцию $CharToNum$, которая переводит значения шестнадцатеричных чисел в их десятичное представление (для корректного заполнения массива count).
+Также перегружены операторы $>>$ и $=$ для удобства работы со структурой $TData$.
+
+Возвращаясь к моменту считывания данных: считав ключ, программа выделяет место под значение и считывает его, далее с помощью realloc занятое на предыдущей итерации место освобождается и считанные и значение отправляются в вектор для сортировки.
+
+\begin{lstlisting}[language=C]
+#include <iostream>
+#include <ctime>
+#include <vector>
+#include <string>
+#include <cstring>
+
+
+const int NUMBER_OF_DIGIT = 32;
+
+typedef unsigned long long ull;
+typedef struct TData {
+    char key[NUMBER_OF_DIGIT + 1];
+    char* str;
+
+    TData& operator= (const TData& tmp) {
+        for (int i = 0; i < NUMBER_OF_DIGIT; i++)
+            this->key[i] = tmp.key[i];
+        str = tmp.str;
+        return *this;
+    }
+} TData;
+
+
+std::ostream& operator<< (std::ostream& out, const TData& td) {
+    std::cout << td.key << "\t" << td.str << '\n';
+    return out;
+}
+
+
+const int CONVERT_CONST_TO_HEX_SISTEM = 10;
+
+int CharToNum(int inc_idx) {
+    if ('a' <= inc_idx && inc_idx <= 'f')  {             //letter
+        return inc_idx - 'a' + CONVERT_CONST_TO_HEX_SISTEM;
+    }
+    else if ('0' <= inc_idx && inc_idx <= '9')  {        //number
+        return inc_idx - '0';
+    }
+    return 0;
+}
+
+
+const int SIZE_OF_COUNTING_MASSIVE = 16;
+
+void CountingSort(std::vector<TData>& v_data, size_t digit_num) {
+    std::vector<TData> res(v_data.size());
+    ull count[SIZE_OF_COUNTING_MASSIVE] = { 0 };
+
+    for (size_t i = 0; i < v_data.size(); i++) {
+        size_t incremental_idx = v_data[i].key[digit_num];
+        count[CharToNum(incremental_idx)]++;
+    }
+
+    for (int i = 1; i < SIZE_OF_COUNTING_MASSIVE; i++) {
+        count[i] += count[i - 1];
+    }
+
+    for (int i = v_data.size() - 1; i >= 0; i--) {
+        size_t idx = CharToNum(v_data[i].key[digit_num]);
+        res[count[idx] - 1] = v_data[i];
+        count[idx]--;
+    }
+
+    v_data = res;
+}
+
+
+void RadixSort(std::vector<TData>& v_data) {
+    for (int digit_num = NUMBER_OF_DIGIT - 1; digit_num >= 0; digit_num--) {
+        CountingSort(v_data, digit_num);
+    }
+}
+
+
+const int LENGTH_OF_STRING = 2048;
+
+int main() {
+    std::ios::sync_with_stdio(false);
+    std::cin.tie(nullptr);
+    std:: cout.tie(nullptr);
+
+    TData tmp;
+    std::vector<TData> v_data;
+
+    while (scanf("%s", tmp.key) != EOF) {
+        tmp.str = new char[LENGTH_OF_STRING + 1];
+        scanf("%s", tmp.str);
+        tmp.str = (char *)realloc(tmp.str, sizeof(char) * (strlen(tmp.str) + 1));         
+        v_data.push_back(std::move(tmp));
+    }
+
+
+    if (v_data.size()) {
+        RadixSort(v_data);
+    }
+
+    for (TData tmp : v_data) {
+        std::cout << tmp;
+    }
+
+    return 0;
+}
+\end{lstlisting}
+
+\section{Консоль}
+\begin{alltt}
+lunidep@lunidep-VirtualBox:~/Desktop/da_lab1$ g++ -pedantic -std=c++17 -Wall -Werror da_lab1.cpp -o da_lab1
+lunidep@lunidep-VirtualBox:~/Desktop/da_lab1$ cat test.t 
+00000000000000000000000000000000	xGfxrxGGxrxMMMMfrrrG
+ffffffffffffffffffffffffffffffff	xGfxrxGGxrxMMMMfrrr
+00000000000000000000000000000000	xGfxrxGGxrxMMMMfrr
+ffffffffffffffffffffffffffffffff	xGfxrxGGxrxMMMMfr
+lunidep@lunidep-VirtualBox:~/Desktop/da_lab1$ ./da_lab1 < test.t
+00000000000000000000000000000000	xGfxrxGGxrxMMMMfrrrG
+00000000000000000000000000000000	xGfxrxGGxrxMMMMfrr
+ffffffffffffffffffffffffffffffff	xGfxrxGGxrxMMMMfrrr
+ffffffffffffffffffffffffffffffff	xGfxrxGGxrxMMMMfr
+\end{alltt}
+\pagebreak
