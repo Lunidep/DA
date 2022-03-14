@@ -1,0 +1,28 @@
+\section{Тест производительности}
+
+Тест представлял из себя сравнение поразрядной сортировки, реализованной мной в этой лабораторной работе с STL сртировкой. Задачей была сортировка файла, состоящего из 10000 пар \enquote{ключ-значение}, и их упорядочивание по возрастанию ключа.
+
+\begin{alltt}
+lunidep@lunidep-VirtualBox:~/Desktop/da_lab1$ g++ -pedantic -std=c++17 -Wall -Werror da_lab1.cpp -o da_lab1
+lunidep@lunidep-VirtualBox:~/Desktop/da_lab1$ ./da_lab1 < tests/01.t > tmp
+lunidep@lunidep-VirtualBox:~/Desktop/da_lab1$ cat tmp | grep "time"
+Radix sort time: 81956us
+STL Sort time: 15318us
+\end{alltt}
+
+Как видно, что поразрядная сортировка выиграла у STL, засчет сравнительо небольшого объема сортируемых данных, при увеличении этого объема со временем STL сортировка начнет показывать себя более эффективной.
+
+
+
+Также хочется продемонстрировать примерную линейность времени сортировки
+    
+    
+    n – количество пар «ключ-значение» во входном файле
+\begin{enumerate}
+    \item n = 10; time = 0,002s
+    \item n = 100; time = 0,002s
+    \item n = 1000; time = 0,014s
+    \item n = 10000; time = 0,192s
+    \item n = 100000; time = 1,070s
+\end{enumerate}
+\pagebreak
