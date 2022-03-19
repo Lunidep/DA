@@ -30,7 +30,7 @@ function main(){
 
 	log_info "Stage #1. Compiling..."
 
-	if ! g++ -std=c++17 ${prog} -o ${bin} ; then
+	if ! make ; then
 		log_error "Failed to compile da_lab1.cpp"
 		return 1
 	fi
@@ -68,6 +68,31 @@ function main(){
 	done
 
 	log_info "Checking OK"
+
+
+	log_info "Stage #4 Benchmark test generating..."
+	local count_of_tests=-1
+	if ! ./generator.py ${TESTS_DIR} ${count_of_tests} ; then
+		log_error "Failed to benchmark test generating"
+		return 1
+	fi 
+	log_info "Benchmark test generating OK"
+
+
+	log_info "Stage #5 Benchmarking..."
+	if ! make benchmark ; then
+		log_info "Failed to compile benchmark."
+		return 1
+	fi
+	local benchmark_bin=./benchmark
+	local benchmark_file=benchmark.t
+	log_info "Running ${benchmark_file}"
+	if ! ${benchmark_bin} < ${TESTS_DIR}/${benchmark_file}; then
+	log_error "Failed to run ${benchmark_bin} for ${benchmark_file}."
+	return 1
+	fi
+	
+	log_info "Benchmarking OK"
 }
 
 
