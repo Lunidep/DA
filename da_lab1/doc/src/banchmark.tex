@@ -1,28 +1,46 @@
 \section{Тест производительности}
 
-Тест представлял из себя сравнение поразрядной сортировки, реализованной мной в этой лабораторной работе с STL сртировкой. Задачей была сортировка файла, состоящего из 10000 пар \enquote{ключ-значение}, и их упорядочивание по возрастанию ключа.
+Тест представлял из себя сравнение поразрядной сортировки, реализованной мной в этой лабораторной работе с STL сртировкой. Задачей была сортировка файла, состоящего из 1 000 000 пар \enquote{ключ-значение}, и их упорядочивание по возрастанию ключа.
 
 \begin{alltt}
-lunidep@lunidep-VirtualBox:~/Desktop/da_lab1$ g++ -pedantic -std=c++17 -Wall -Werror da_lab1.cpp -o da_lab1
-lunidep@lunidep-VirtualBox:~/Desktop/da_lab1$ ./da_lab1 < tests/01.t > tmp
-lunidep@lunidep-VirtualBox:~/Desktop/da_lab1$ cat tmp | grep "time"
-Radix sort time: 81956us
-STL Sort time: 15318us
+lunidep@lunidep-VirtualBox:~/Desktop/da_lab1$ ./wrapper.sh
+[info][Вс 20 мар 2022 00:26:23 MSK] Stage #1. Compiling...
+g++ -std=c++14 -pedantic -Wall -Wextra -Wno-unused-variable sort.o da_lab1.cpp -o da_lab1
+[info][Вс 20 мар 2022 00:26:23 MSK] Compiling OK
+[info][Вс 20 мар 2022 00:26:23 MSK] Stage #2. Test generating...
+[info][Вс 20 мар 2022 00:26:23 MSK] Test generating OK
+[info][Вс 20 мар 2022 00:26:23 MSK] Stage #3. Chacking...
+[info][Вс 20 мар 2022 00:26:23 MSK] tests/01.t, lines = 51 OK
+[info][Вс 20 мар 2022 00:26:23 MSK] tests/02.t, lines = 981 OK
+[info][Вс 20 мар 2022 00:26:23 MSK] tests/03.t, lines = 978 OK
+[info][Вс 20 мар 2022 00:26:23 MSK] tests/04.t, lines = 443 OK
+[info][Вс 20 мар 2022 00:26:23 MSK] tests/05.t, lines = 891 OK
+[info][Вс 20 мар 2022 00:26:23 MSK] tests/06.t, lines = 794 OK
+[info][Вс 20 мар 2022 00:26:23 MSK] tests/07.t, lines = 464 OK
+[info][Вс 20 мар 2022 00:26:23 MSK] tests/08.t, lines = 597 OK
+[info][Вс 20 мар 2022 00:26:23 MSK] tests/09.t, lines = 23 OK
+[info][Вс 20 мар 2022 00:26:23 MSK] tests/10.t, lines = 765 OK
+[info][Вс 20 мар 2022 00:26:23 MSK] Checking OK
+[info][Вс 20 мар 2022 00:26:23 MSK] Stage #4 Benchmark test generating...
+[info][Вс 20 мар 2022 00:26:42 MSK] Benchmark test generating OK
+[info][Вс 20 мар 2022 00:26:42 MSK] Stage #5 Benchmarking...
+make: 'benchmark' is up to date.
+[info][Вс 20 мар 2022 00:26:42 MSK] Running benchmark.t
+\textbf{Count of lines is 1000000
+Counting sort time: 8801623us
+STL Sort time: 2180026us}
+[info][Вс 20 мар 2022 00:26:53 MSK] Benchmarking OK
 \end{alltt}
 
-Как видно, что поразрядная сортировка выиграла у STL, засчет сравнительо небольшого объема сортируемых данных, при увеличении этого объема со временем STL сортировка начнет показывать себя более эффективной.
+Из примера видно, что при больших объемах данных поразрядная сортировка проигрывает STL, однако при меньших объемах, она показывет себя более эффективной.
 
-
-
-Также хочется продемонстрировать примерную линейность времени сортировки
-    
-    
-    n – количество пар «ключ-значение» во входном файле
+Также хочется продемонстрировать примерную линейность времени сортировки n – количество пар «ключ-значение» во входном файле
 \begin{enumerate}
     \item n = 10; time = 0,002s
     \item n = 100; time = 0,002s
     \item n = 1000; time = 0,014s
     \item n = 10000; time = 0,192s
     \item n = 100000; time = 1,070s
+    \item n = 1000000; time = 14,106s
 \end{enumerate}
 \pagebreak
