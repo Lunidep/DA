@@ -50,7 +50,7 @@ function main(){
 	log_info "Test generating OK"
 
 
-	log_info "Stage #3. Chacking..."
+	log_info "Stage #3. Checking..."
 	for test_file in $(ls ${TESTS_DIR}/*.t) ;do
 		local tmp_output=tmp
 		if ! ./${bin} < ${test_file} > ${tmp_output} ; then
