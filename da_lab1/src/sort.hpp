@@ -18,6 +18,14 @@ struct TData {
     char key[NUMBER_OF_DIGIT + 1];
     char* str;  
     
+    TData() : str{ nullptr }{}
+    
+    TData(const std::string k , const std::string s){
+        strcpy ( key , k.c_str() );
+        str = new char[ s.length() + 1];
+        strcpy ( str , s.c_str() );
+    }
+
     TData& operator= (const TData& tmp) {
         for (int i = 0; i < NUMBER_OF_DIGIT; i++)
             this->key[i] = tmp.key[i];
@@ -35,8 +43,6 @@ struct TData {
     }
 
 };
-
-
 
 int CharToNum(int inc_idx);
 void CountingSort(std::vector<TData>& v_data, size_t digit_num);

@@ -43,7 +43,7 @@ function main(){
 	mkdir ${TESTS_DIR}
 
 	local count_of_tests=10
-	if ! ./generator.py ${TESTS_DIR} ${count_of_tests} ; then
+	if ! python3 generator.py ${TESTS_DIR} ${count_of_tests} ; then
 		log_error "Failed to test generating tests"
 		return 1
 	fi 
@@ -72,7 +72,7 @@ function main(){
 
 	log_info "Stage #4 Benchmark test generating..."
 	local count_of_tests=-1
-	if ! ./generator.py ${TESTS_DIR} ${count_of_tests} ; then
+	if ! python3 generator.py ${TESTS_DIR} ${count_of_tests} ; then
 		log_error "Failed to benchmark test generating"
 		return 1
 	fi 

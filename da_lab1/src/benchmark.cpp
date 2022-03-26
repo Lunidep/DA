@@ -41,7 +41,7 @@ int main()
     end_ts = std::chrono::system_clock::now();
     uint64_t stl_sort_ts = std::chrono::duration_cast<duration_t>( end_ts - start_ts ).count();/**/
 
-    std::cout << "Counting sort time: " << counting_sort_ts << DURATION_PREFIX << std::endl;
+    std::cout << "Radix sort time: " << counting_sort_ts << DURATION_PREFIX << std::endl;
     std::cout << "STL Sort time: " << stl_sort_ts << DURATION_PREFIX << std::endl;/**/
     return 0;
 }
