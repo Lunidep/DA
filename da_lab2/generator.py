@@ -35,7 +35,7 @@ def main():
                     test_file.write("+ {0} {1}\n".format( key, value ))
                     key = key.lower()
                     
-                    answer = "Exists"
+                    answer = "Exist"
                     if key not in keys:
                         answer = "OK"
                         keys[key] = value
