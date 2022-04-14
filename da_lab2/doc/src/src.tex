@@ -1,0 +1,153 @@
+\section{Описание}
+
+Интернет-ресурс \cite{kvodo_avl_tree} дает следующее описание AVL-деревьям:
+
+АВЛ-дерево – структура данных, изобретенная в 1968 году двумя советскими математиками: Евгением Михайловичем Ландисом и Георгием Максимовичем Адельсон-Вельским. Прежде чем дать конструктивное определение АВЛ-дереву, сделаем это для сбалансированного двоичного дерева поиска.\newline
+
+Сбалансированным называется такое двоичное дерево поиска, в котором высота каждого из поддеревьев, имеющих общий корень, отличается не более чем на некоторую константу k, и при этом выполняются условия характерные для двоичного дерева поиска.\newline
+
+АВЛ-дерево – сбалансированное двоичное дерево поиска с k=1. Для его узлов определен коэффициент сбалансированности (balance factor). Balance factor – это разность высот правого и левого поддеревьев, принимающая одно значение из множества {-1, 0, 1}. Ниже изображен пример АВЛ-дерева, каждому узлу которого поставлен в соответствие его реальный коэффициент сбалансированности.\newline
+
+Сбалансированное дерево эффективно в обработке, что следует из следующих рассуждений. Максимальное количество шагов, которое может потребоваться для обнаружения нужного узла, равно количеству уровней самого бинарного дерева поиска. А так как поддеревья сбалансированного дерева, \enquote{растущие} из произвольного корня, практически симметричны, то и его листья расположены на сравнительно невысоком уровне, т. е. высота дерева сводиться к оптимальному минимуму. Поэтому критерий баланса положительно сказывается на общей производительности. Но в процессе обработки АВЛ-дерева, балансировка может нарушиться, тогда потребуется осуществить операцию балансировки. Помимо нее, над АВЛ-деревом определены операции вставки и удаления элемента. Именно выполнение последних может привести к дисбалансу дерева.\newline
+
+Доказано, что высота АВЛ-дерева, имеющего N узлов, примерно равна log2N. Имея в виду это, а также то, то, что время выполнения операций добавления и удаления напрямую зависит от операции поиска, получим временную сложность трех операций для худшего и среднего случая  – O(logN).\newline
+
+\pagebreak
+
+\section{Исходный код}
+
+Программа разделена на три файла:
+\begin{enumerate}
+    \item $main.cpp$
+    \item $avl.h$
+    \item $detail avl.h$
+\end{enumerate}
+
+В файле $main.cpp$ описан только интерфейс программы, основная логика же описана в двух других файлах.\newline
+
+В файле $avl.cpp$ описана структура узла моего дерева:
+\begin{lstlisting}[language=C]
+struct TAvlNode {
+	K key;
+	V value;
+	unsigned long long height;
+	TAvlNode *left;
+	TAvlNode *right;
+	TAvlNode() : key(), value(), height{1}, left{nullptr}, 
+						right{nullptr} {};
+	TAvlNode(K k, V v) : key{k}, value{v}, height{1}, 
+						left{nullptr}, right{nullptr} {};
+};
+\end{lstlisting}
+
+
+Реализованный класс AVL-дерева(TAvl) с основными методами: $Add$, $Delete$, $Find$.
+Но наиболее интереснвя честь реализации AVL-дерева скрывается внутри них, а именно балансировка после вставки и удаления элеметов.\newline
+
+Относительно АВЛ-дерева балансировкой вершины называется операция, которая в случае разницы высот левого и правого поддеревьев = 2, изменяет связи предок-потомок в поддереве данной вершины так, что разница становится <= 1, иначе ничего не меняет. Указанный результат получается вращениями поддерева данной вершины.\newline
+
+Реализована данная механика путем совершением деревом 4 видов различных поворотов: \cite{wikipedia_avl_tree}:
+\begin{enumerate}
+    \item Малое левое вращение AVL LR.
+Данное вращение используется тогда, когда высота b-поддерева — высота L = 2 и высота С <= высота R.
+    \item Большое левое вращение AVL BR.
+Данное вращение используется тогда, когда высота b-поддерева — высота L = 2 и высота c-поддерева > высота R.
+    \item Малое правое вращение AVL LL.
+Данное вращение используется тогда, когда высота b-поддерева — высота R = 2 и высота С <= высота L.
+    \item Большое правое вращение AVL BL.
+Данное вращение используется тогда, когда высота b-поддерева — высота R = 2 и высота c-поддерева > высота L.
+\end{enumerate}
+
+В каждом случае достаточно просто доказать то, что операция приводит к нужному результату и что полная высота уменьшается не более чем на 1 и не может увеличиться. Также можно заметить, что большое вращение это комбинация правого и левого малого вращения. Из-за условия балансированности высота дерева О(log(N)), где N- количество вершин, поэтому добавление элемента требует O(log(N)) операций.\newline
+
+
+\begin{lstlisting}[language=C]
+ull Height(const TNode *node) {
+		return node != nullptr ? node->height : 0;
+	}
+
+	int Balance(const TNode *node) {
+		return Height(node->left) - Height(node->right);
+	}
+
+	void Reheight(TNode *node) {
+		node->height = std::max(Height(node->left), Height(node->right)) + 1;
+	}
+
+	TNode *RotateLeft(TNode *a) {
+		TNode *b = a->right;
+		a->right = b->left;
+		b->left = a;
+		Reheight(a);
+		Reheight(b);
+		return b;
+	}
+
+	TNode *RotateRight(TNode *a) {
+		TNode *b = a->left;
+		a->left = b->right;
+		b->right = a;
+		Reheight(a);
+		Reheight(b);
+		return b;
+	}
+
+	TNode *RLrotate(TNode *a) {
+		a->right = RotateRight(a->right);
+		return RotateLeft(a);
+	}
+
+	TNode *LRrotate(TNode *a) {
+		a->left = RotateLeft(a->left);
+		return RotateRight(a);
+	}
+
+	TNode *Rebalance(TNode *node) {
+		if (node == nullptr) {
+			return nullptr;
+		}
+		Reheight(node);
+		int balanceRes = Balance(node);
+		if (balanceRes == -2) {
+			if (Balance(node->right) == 1) {
+				return RLrotate(node);
+			}
+			return RotateLeft(node);
+		}
+		else if (balanceRes == 2) {
+			if (Balance(node->left) == -1) {
+				return LRrotate(node);
+			}
+			return RotateRight(node);
+		}
+		return node;
+	}
+\end{lstlisting}
+
+В файле $detailavl.h$ описан алгоритм сохранения и загрузки из бинарного файла объектов моего класса $TDetailAvl$, который являтся наследником ранее опианного класса $TAvl$. Именно с этим классом взаимодействует пользователь.\newline
+
+
+\section{Консоль}
+tmp:
+\begin{alltt}
++ a 1
++ A 2
++ aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa 18446744073709551615
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+A
+- A
+a
+\end{alltt}
+
+console output:
+\begin{alltt}
+root@Lunidep:~/DA/da_lab2/src# ./da_lab2 < tmp
+OK
+Exist
+OK
+OK: 18446744073709551615
+OK: 1
+OK
+NoSuchWord
+\end{alltt}
+\pagebreak
