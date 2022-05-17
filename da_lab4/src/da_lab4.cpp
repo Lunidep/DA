@@ -181,8 +181,8 @@ int main() {
 	}
 
 
-	for (int k = pattern.size() - 1; k < text.size();) {
-		int i = k;
+	for (uint32_t k = pattern.size() - 1; k < text.size();) {
+		int i = (int)k;
 		bool isOk = true;
 		for (int j = pattern.size() - 1; j >= 0; --j) {
 			if (text[i] != pattern[j]) {
