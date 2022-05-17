@@ -1,0 +1,24 @@
+\section{Тест производительности}
+
+Тест представлял из себя сравнение реализованного мной алгорима Бойера-Мура c бинарным поиском, реализованным в STL посредством функции upper_bound.\newline
+
+В результате работы $benchmark.cpp$ видны следующие результаты:
+
+\begin{alltt}
+root@Lunidep:~/DA/da_lab4# ./wrapper.sh 
+[info][Tue May 17 11:35:24 MSK 2022] Stage #1. Compiling...
+g++ -std=c++17 -pedantic -Wall -Wextra -Wno-unused-variable da_lab4.cpp -o da_lab4
+g++ -std=c++17 -pedantic -Wall -Wextra -Wno-unused-variable benchmark.cpp -o benchmark
+[info][Tue May 17 11:35:25 MSK 2022] Compiling OK
+[info][Tue May 17 11:35:25 MSK 2022] Stage #2. Benchmark generating...
+[info][Tue May 17 11:35:26 MSK 2022] Benchmark generating OK
+[info][Tue May 17 11:35:26 MSK 2022] Stage #3. Benchmark results:
+BM_search: 181 ms
+find_search: 619 ms
+[info][Tue May 17 11:35:28 MSK 2022] Benchmark OK
+\end{alltt}
+
+Из примера видно, релизованный мной алгорим превосходит своего STL-соперника, потому что он обладает линейной сложностью, а бинарный поиск - операция за O(log(n)).
+
+
+\pagebreak
