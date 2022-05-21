@@ -1,0 +1,8 @@
++ a 1
++ b 2
++ c 3
+! Save lol
++ d 777
+d
+! Load lol
+d
