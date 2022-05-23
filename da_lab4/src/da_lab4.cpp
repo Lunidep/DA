@@ -4,9 +4,9 @@
 #include <vector>
 #include <unordered_map>
 #include <algorithm>
-
+ 
 using namespace std;
-
+ 
 void ParseLineTo(const string& line, vector<uint32_t>& vec) {
 	uint32_t tmp = 0;
 	bool isSpaces = true;
@@ -27,7 +27,7 @@ void ParseLineTo(const string& line, vector<uint32_t>& vec) {
 		vec.push_back(tmp);
 	}
 }
-
+ 
 class TBadLetterRule {
 public:
 	TBadLetterRule(const vector<uint32_t>& pattern) :
@@ -37,7 +37,7 @@ public:
 		}
 		//getter();
 	}
-
+ 
 	int Use(uint32_t letter, size_t idx_patt) const {
 		auto it = rule.find(letter);
 		if (it == rule.end()) {
@@ -54,7 +54,7 @@ public:
 		}
 		return patt_size;
 	}
-
+ 
 	void getter() {
 		for (auto const& pair : rule) {
 			cout << "{" << pair.first << ": ";
@@ -64,13 +64,13 @@ public:
 			cout << "}\n";
 		}
 	}
-
+ 
 private:
 	unordered_map<uint32_t, vector<uint32_t>> rule;
 	size_t patt_size;
 };
-
-
+ 
+ 
 vector<size_t> ZFunction(const vector<uint32_t>& pattern) {
 	size_t n = pattern.size();
 	vector<size_t> res(n, 0);
@@ -90,7 +90,7 @@ vector<size_t> ZFunction(const vector<uint32_t>& pattern) {
 	}
 	return res;
 }
-
+ 
 vector<size_t> NFunction(vector<uint32_t> pattern) {
 	reverse(pattern.begin(), pattern.end());
 	size_t n = pattern.size();
@@ -101,9 +101,9 @@ vector<size_t> NFunction(vector<uint32_t> pattern) {
 	}
 	return res;
 }
-
+ 
 const size_t UNDEFINED = -1;
-
+ 
 vector<size_t> LFunction(const vector<uint32_t>& pattern, size_t& gp_size) {
 	gp_size = 0;
 	size_t n = pattern.size();
@@ -120,7 +120,7 @@ vector<size_t> LFunction(const vector<uint32_t>& pattern, size_t& gp_size) {
 	}
 	return res;
 }
-
+ 
 class TGoodSuffix {
 public:
 	TGoodSuffix(const vector<uint32_t>& pattern) : patt_size(pattern.size())
@@ -128,7 +128,7 @@ public:
 		rule = LFunction(pattern, gp_size);
 		//getter();
 	}
-
+ 
 	int Use(size_t idx_patt) const {
 		if (idx_patt >= patt_size) {
 			return 1;
@@ -138,11 +138,11 @@ public:
 		}
 		return patt_size - rule[idx_patt] - 1;
 	}
-
+ 
 	size_t Getgp_size() const {
 		return gp_size;
 	}
-
+ 
 	void getter() {
 		for (int lol : rule) {
 			cout << lol << " ";
@@ -153,24 +153,24 @@ private:
 	size_t patt_size;
 	size_t gp_size = 0;
 };
-
-
-
+ 
+ 
+ 
 int main() {
 	std::ios_base::sync_with_stdio(false);
 	std::cin.tie(nullptr);
-
+ 
 	string line;
 	getline(cin, line);
 	vector<uint32_t> pattern;
 	ParseLineTo(move(line), pattern);
-
+ 
 	//cout << "\n\n---------------------------0------------------------------\n";
 	TBadLetterRule bl_rule(pattern);
 	//cout << "\n\n---------------------------1------------------------------\n";
 	TGoodSuffix gs_rule(pattern);
 	//cout << "\n\n---------------------------2------------------------------\n";
-
+ 
 	size_t word_count = 0;
 	vector<int> words_in_line;
 	vector<uint32_t> text;
@@ -179,14 +179,14 @@ int main() {
 		word_count += text.size() - word_count;
 		words_in_line.push_back(word_count);
 	}
-
-
+ 
+ 
 	for (uint32_t k = pattern.size() - 1; k < text.size();) {
 		int i = (int)k;
 		bool isOk = true;
 		for (int j = pattern.size() - 1; j >= 0; --j) {
 			if (text[i] != pattern[j]) {
-				int offset = max(1, gs_rule.Use(j + 1));
+				int offset = max(bl_rule.Use(text[i], j), gs_rule.Use(j + 1));
 				k += offset;
 				isOk = false;
 				break;
@@ -207,6 +207,6 @@ int main() {
 			k += pattern.size() - gs_rule.Getgp_size();
 		}
 	}
-
+ 
 	return 0;
 }
