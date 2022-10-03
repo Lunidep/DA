@@ -9,6 +9,7 @@
 #include <algorithm>
 
 using namespace std;
+#define endl '\n';
 
 class TNode
 {

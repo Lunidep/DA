@@ -1,5 +1,8 @@
 #include "TSuffixTree.h"
 
+#define m_it map<char, TNode *>::iterator 
+#define s_it string::iterator
+
 TSuffixTree::TSuffixTree(string str){
     text = str;
     root = new TNode(text.end(), text.end());
@@ -10,34 +13,34 @@ TSuffixTree::TSuffixTree(string str){
     remainder  = 0;
     root->sufflink = root;
 
-    for (string::iterator it = text.begin(); it != text.end(); ++it) {
+    for (s_it it = text.begin(); it != text.end(); ++it) {
         AddLetter(it);
     }
 }
 
-TNode::TNode(string::iterator begin, string::iterator end): 
+TNode::TNode(s_it begin, s_it end): 
     begin(begin), end(end), sufflink(nullptr) {}
 
-TSuffixTree::~TSuffixTree(){
+TSuffixTree::~TSuffixTree() {
     RecursiveDestroy(root);
 }
 
-void TSuffixTree::RecursiveDestroy(TNode *node){
+void TSuffixTree::RecursiveDestroy(TNode *node) {
     for (auto it = node->to.begin(); it != node->to.end(); ++it)
         RecursiveDestroy(it->second);
     delete node;
 }
 
 
-void TSuffixTree::AddLetter(string::iterator add){
+void TSuffixTree::AddLetter(s_it add){
     lastAdded = root;
     ++remainder;
     while (remainder) {
         if (activeLen == 0) {
             activeEdge = add;
         }
-        //search from activeNode common letters??
-        map<char, TNode *>::iterator it = activeNode->to.find(*activeEdge);
+        //поиск из activeNode совпадений
+        m_it it = activeNode->to.find(*activeEdge);
         TNode *next;
 
         //search -> false
@@ -95,7 +98,6 @@ void TSuffixTree::AddLetter(string::iterator add){
                 lastAdded->sufflink = split; 
             }
             lastAdded = split;
-            cout << "SPLIT" << endl;
         }
 
 
@@ -122,80 +124,76 @@ void TSuffixTree::AddLetter(string::iterator add){
     }
 }
 
-bool TSuffixTree::CheckEdge(string::iterator position, TNode *next){
+bool TSuffixTree::CheckEdge(s_it position, TNode *next){
     int edgeLen;
-    if (position + 1 < next->end)// наша позиция не последняя
-        //inside edge
+    if (position + 1 < next->end)// внутри ребра
         edgeLen = position + 1 - next->begin;
     else
         edgeLen = next->end - next->begin;
 
 
-    //checking if we can go through entire edge
     if (activeLen >= edgeLen) {
         activeEdge += edgeLen;
         activeLen -= edgeLen;
         activeNode = next;
-        //successfully passed edge
-        return true;
+        return true;// можем пройти целиком
     }
-    //need to apply some rule
-    //which one checked in main function
     return false;
 }
 
 
 
 void TSuffixTree::SearchLeafs(TNode *node, vector<int> &answer, int patternLocation){
-    if (node->end == text.end()) { 
-        //leaf found
+    if (node->end == text.end()) { // лист
         answer.push_back(text.size() - patternLocation + 1);
-    } else{
+    } 
+    
+    else{ // если не лист, делаем dfs по всем его детям
         TNode* child;
         int addDepth;
-        //run through all eddges from this node
-        //and run dfs at them
-        for (auto it = node->to.begin(); it != node->to.end(); ++it) {
-            child = it -> second;
-            addDepth = child -> end - child->begin; //edge length
+
+        for (m_it it = node->to.begin(); it != node->to.end(); ++it) {
+            child = it->second;
+            addDepth = child->end - child->begin;
             SearchLeafs(child, answer,  patternLocation + addDepth);
         }
     }
 }
 
-vector<int> TSuffixTree::Search(string pattern){
+vector<int> TSuffixTree::Search(string pattern){ // задача - найти ноду, в которой закончится паттерн
     vector<int> answer;
-    //string::iterator patPos = pattern.begin();
-    int patternLocation = 0; //symbols passed at edges
-    TNode *node = root; ///starts from root
+
+    int patternLocation = 0;
+    TNode *node = root;
+
     if (pattern.size() > text.size()) {
-        //pattern larger than text
         return answer;
     }
-    //search for all pattern
-    for (string::iterator patPos = pattern.begin(); patPos != pattern.end(); ++patPos) {
-        auto pathTo = node->to.find(*patPos);
-        if(pathTo == node->to.end()) {
-            //mismatch
-            //no such symbol from node
+
+    for (s_it patPos = pattern.begin(); patPos != pattern.end(); ++patPos) { // итерируемся по паттерну
+        m_it pathTo = node->to.find(*patPos);
+
+        if(pathTo == node->to.end()) { // из node нет перехода по данному символу
             return answer;
         }
+
         node = pathTo->second;
-        patternLocation += node->end - node->begin;     
-        for(string::iterator edgePos = node->begin; edgePos != node->end && patPos != pattern.end(); ++edgePos, patPos++){
-            if(*edgePos != *patPos){
-                //mismatch inside edge
+        patternLocation += node->end - node->begin;    
+
+        for(s_it edgePos = node->begin; edgePos != node->end && patPos != pattern.end(); ++edgePos, patPos++){
+            if(*edgePos != *patPos){ //несовпадение в edge
+                cout << "LOL " << endl;
                 return answer;
             }
-        }        
-        if(patPos==pattern.end())
-            //exactly at node
+        }
+        if(patPos == pattern.end()){
             break;
+        }
         --patPos;
     }
+
     //node found run dfs for it
-    SearchLeafs(node, answer, patternLocation);  
-    //sort pattern indexes 
+    SearchLeafs(node, answer, patternLocation);
     sort(answer.begin(), answer.end());    
     return answer;
 }

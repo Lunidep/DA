@@ -2,20 +2,21 @@
 #include <string>
 #include <iostream>
 
-int main(void)
-{
+int main() {
     string text;
     cin >> text;
     TSuffixTree tree(text + "$");
+
     int count = 1; 
     vector<int> res;
     while (cin >> text){
         res = tree.Search(text);
+
         if (!res.empty()) {
             cout << count << ": ";
-            for (int i = 0; i < res.size()-1; ++i)
+            for (int i = 0; i < res.size() - 1; ++i)
                 cout << res[i] << ", ";
-            cout << res[res.size()-1] << endl;
+            cout << res[res.size() - 1] << endl;
         }
         ++count;
     }
