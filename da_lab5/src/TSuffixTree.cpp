@@ -1,8 +1,5 @@
 #include "TSuffixTree.h"
 
-#define m_it map<char, TNode *>::iterator 
-#define s_it string::iterator
-
 TSuffixTree::TSuffixTree(string str){
     text = str;
     root = new TNode(text.end(), text.end());
@@ -13,26 +10,26 @@ TSuffixTree::TSuffixTree(string str){
     remainder  = 0;
     root->sufflink = root;
 
-    for (s_it it = text.begin(); it != text.end(); ++it) {
+    for (string::iterator it = text.begin(); it != text.end(); ++it) {
         AddLetter(it);
     }
 }
 
-TNode::TNode(s_it begin, s_it end): 
+TNode::TNode(string::iterator begin, string::iterator end): 
     begin(begin), end(end), sufflink(nullptr) {}
 
-TSuffixTree::~TSuffixTree() {
+TSuffixTree::~TSuffixTree(){
     RecursiveDestroy(root);
 }
 
-void TSuffixTree::RecursiveDestroy(TNode *node) {
+void TSuffixTree::RecursiveDestroy(TNode *node){
     for (auto it = node->to.begin(); it != node->to.end(); ++it)
         RecursiveDestroy(it->second);
     delete node;
 }
 
 
-void TSuffixTree::AddLetter(s_it add){
+void TSuffixTree::AddLetter(string::iterator add){
     lastAdded = root;
     ++remainder;
     while (remainder) {
@@ -40,19 +37,18 @@ void TSuffixTree::AddLetter(s_it add){
             activeEdge = add;
         }
         //поиск из activeNode совпадений
-        m_it it = activeNode->to.find(*activeEdge);
+
+        map<char, TNode *>::iterator it = activeNode->to.find(*activeEdge);
         TNode *next;
 
         //search -> false
-        if (it == activeNode->to.end()) {
+        if (it == activeNode->to.end()) { // ПРАВИЛО 2
             TNode *leaf = new TNode(add, text.end());
             activeNode->to[*activeEdge] = leaf;
 
-            
-            if (lastAdded != root){// ПРАВИЛО 2
-                //cout << "SL 1\n";
-                lastAdded->sufflink = activeNode; 
-            }    
+            if (lastAdded != root) {
+                lastAdded->sufflink = activeNode;    
+            }
             lastAdded = activeNode;
             /*
             Если ребро разделяется и вставляется новая вершина, 
@@ -60,12 +56,13 @@ void TSuffixTree::AddLetter(s_it add){
             ранее вставленная вершина и новая вершина соединяются через 
             специальный указатель, суффиксную ссылку.
             */
+
         } 
         
         //search -> true
         else {
             next =  it->second; //вершина, куда мы идем
-            
+
             //можем ли мы пройти это ребро целиком?
             if (CheckEdge(add, next)) {
                 continue;
@@ -74,12 +71,10 @@ void TSuffixTree::AddLetter(s_it add){
             //мы внутри ребра и при сравнении его с текстом все хорошо =)
             if (*(next->begin + activeLen) == *add) {
                 ++activeLen;
-                
-                if (lastAdded != root) {// ПРАВИЛО 2
-                    //cout << "SL 2\n";
-                    lastAdded->sufflink = activeNode;    
-                }  
-                       
+                if (lastAdded != root) { // ПРАВИЛО 2
+                    lastAdded->sufflink = activeNode; 
+                }
+                          
                 lastAdded = activeNode;  
                 break;
             }
@@ -92,26 +87,26 @@ void TSuffixTree::AddLetter(s_it add){
             next->begin += activeLen;
             split->to[*next->begin] = next;
 
-            
-            if (lastAdded != root)  {// ПРАВИЛО 2
-                //cout << "SL 3\n";  
+
+            if (lastAdded != root){ // ПРАВИЛО 2
                 lastAdded->sufflink = split; 
-            }
-            lastAdded = split;
+            }             
+                
+            lastAdded = split; 
         }
 
 
         --remainder;
-        
         // ПРАВИЛО 1
-        if (activeNode == root && activeLen != 0) {
+        if (activeNode == root && activeLen) {
             --activeLen;
             activeEdge = add - remainder + 1;
             //activeEdge становится первым символом нового суффикса, который нужно вставить
         } 
+        
         // ПРАВИЛО 3
         else {
-            activeNode = activeNode->sufflink; 
+            activeNode = activeNode->sufflink;
             /*
             После разделения ребра из активная_вершина, которая не является корнем, 
             переходим по суффиксной ссылке, выходящей из этой вершины, 
@@ -124,19 +119,18 @@ void TSuffixTree::AddLetter(s_it add){
     }
 }
 
-bool TSuffixTree::CheckEdge(s_it position, TNode *next){
+bool TSuffixTree::CheckEdge(string::iterator position, TNode *node){
     int edgeLen;
-    if (position + 1 < next->end)// внутри ребра
-        edgeLen = position + 1 - next->begin;
+    if (position + 1 < node->end) // внутри ребра
+        edgeLen = position + 1- node->begin;
     else
-        edgeLen = next->end - next->begin;
-
-
+        edgeLen = node->end - node->begin;
+        
     if (activeLen >= edgeLen) {
         activeEdge += edgeLen;
         activeLen -= edgeLen;
-        activeNode = next;
-        return true;// можем пройти целиком
+        activeNode = node;
+        return true; // можем пройти целиком
     }
     return false;
 }
@@ -152,9 +146,9 @@ void TSuffixTree::SearchLeafs(TNode *node, vector<int> &answer, int patternLocat
         TNode* child;
         int addDepth;
 
-        for (m_it it = node->to.begin(); it != node->to.end(); ++it) {
-            child = it->second;
-            addDepth = child->end - child->begin;
+        for (auto it = node->to.begin(); it != node->to.end(); ++it) {
+            child = it -> second;
+            addDepth = child -> end - child->begin; //edge length
             SearchLeafs(child, answer,  patternLocation + addDepth);
         }
     }
@@ -163,15 +157,15 @@ void TSuffixTree::SearchLeafs(TNode *node, vector<int> &answer, int patternLocat
 vector<int> TSuffixTree::Search(string pattern){ // задача - найти ноду, в которой закончится паттерн
     vector<int> answer;
 
-    int patternLocation = 0;
-    TNode *node = root;
+    int patternLocation = 0; 
+    TNode *node = root; 
 
     if (pattern.size() > text.size()) {
         return answer;
     }
-
-    for (s_it patPos = pattern.begin(); patPos != pattern.end(); ++patPos) { // итерируемся по паттерну
-        m_it pathTo = node->to.find(*patPos);
+    
+    for (string::iterator patPos = pattern.begin(); patPos != pattern.end(); ++patPos) { // итерируемся по паттерну
+        auto pathTo = node->to.find(*patPos);
 
         if(pathTo == node->to.end()) { // из node нет перехода по данному символу
             return answer;
@@ -180,20 +174,17 @@ vector<int> TSuffixTree::Search(string pattern){ // задача - найти н
         node = pathTo->second;
         patternLocation += node->end - node->begin;    
 
-        for(s_it edgePos = node->begin; edgePos != node->end && patPos != pattern.end(); ++edgePos, patPos++){
+        for(string::iterator edgePos = node->begin; edgePos != node->end && patPos != pattern.end(); ++edgePos, patPos++){
             if(*edgePos != *patPos){ //несовпадение в edge
-                cout << "LOL " << endl;
                 return answer;
             }
-        }
-        if(patPos == pattern.end()){
+        }        
+        if(patPos==pattern.end())
             break;
-        }
         --patPos;
     }
-
-    //node found run dfs for it
-    SearchLeafs(node, answer, patternLocation);
+    
+    SearchLeafs(node, answer, patternLocation);  
     sort(answer.begin(), answer.end());    
     return answer;
 }
