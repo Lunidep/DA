@@ -1,0 +1,115 @@
+\section{Описание}
+
+\textbf{Алгоритм Укконена} -это линейно-временной онлайн-алгоритм построения деревьев суффиксов, предложенный Эско Укконеном в 1995 году. Алгоритм начинается с неявного дерева суффиксов, содержащего первый символ строки. Затем он проходит по строке, добавляя последовательные символы до тех пор, пока дерево не будет завершено.
+
+Класс суффиксного дерева, для детерменированности описания состояния, в котором оно нахоодится в лююой момент времени, имеет следующие параметры:\newline
+\textbf{активная точка} представляет тройку (active node, active edge, active len)\newline
+\textbf{remainder} представляет собой количество новых суффиксов, которые нужно вставить\newline
+
+Основные правила, которые используются при добавлении в дерево нового символа:
+\textbf{Правило 1}, после вставки из корня:\newline
+- active node остается корнем\newline
+- active edge становится первым символом нового суффикса, который нужно вставить, т.е. b\newline
+- active len уменьшается на 1\newline
+
+\textbf{Правило 2}\newline
+Если ребро разделяется и вставляется новая вершина, и если это не первая вершина, созданная на текущем шаге, ранее вставленная вершина и новая вершина соединяются через специальный указатель, суффиксную ссылку.\newline
+
+\textbf{Правило 3}\newline
+После разделения ребра из active node, которая не является корнем, переходим по суффиксной ссылке, выходящей из этой вершины, если таковая имеется active node устанавливается вершиной, на которую она указывает. Если суффиксная ссылка отсутствует, active node устанавливается корнем.active edge и active len остаются без изменений.\newline
+
+\pagebreak
+
+\section{Исходный код}
+
+Применение вышеописанных правил на практике происходит в функции добавления символа в дерево:\newline
+
+
+\begin{lstlisting}[language=C]
+void TSuffixTree::AddLetter(string::iterator add){
+    lastAdded = root;
+    ++remainder;
+    while (remainder) {
+        if (activeLen == 0) {
+            activeEdge = add;
+        }
+
+        map<char, TNode *>::iterator it = activeNode->to.find(*activeEdge);
+        TNode *next;
+
+        if (it == activeNode->to.end()) {
+            TNode *leaf = new TNode(add, text.end());
+            activeNode->to[*activeEdge] = leaf;
+
+            if (lastAdded != root) {
+                lastAdded->sufflink = activeNode;    
+            }
+            lastAdded = activeNode;
+
+        } 
+        
+        else {
+            next =  it->second;
+            if (CheckEdge(add, next)) {
+                continue;
+            }
+
+            if (*(next->begin + activeLen) == *add) {
+                ++activeLen;
+                if (lastAdded != root) {
+                    lastAdded->sufflink = activeNode; 
+                }
+                          
+                lastAdded = activeNode;  
+                break;
+            }
+            
+            TNode *split = new TNode(next->begin, next->begin + activeLen);
+            TNode *leaf = new TNode(add, text.end());
+            activeNode->to[*activeEdge] = split;
+
+            split->to[*add] = leaf;
+            next->begin += activeLen;
+            split->to[*next->begin] = next;
+
+
+            if (lastAdded != root){ 
+                lastAdded->sufflink = split; 
+            }             
+                
+            lastAdded = split; 
+        }
+
+
+        --remainder;
+        if (activeNode == root && activeLen) {
+            --activeLen;
+            activeEdge = add - remainder + 1;
+            
+        } 
+
+        else {
+            activeNode = activeNode->sufflink;
+        }
+    }
+}
+\end{lstlisting}
+
+
+
+\section{Консоль}
+tmp:
+\begin{alltt}
+abcdabc
+abcd
+bcd
+bc
+\end{alltt}
+
+console output:
+\begin{alltt}
+1: 1
+2: 2
+3: 2, 6
+\end{alltt}
+\pagebreak

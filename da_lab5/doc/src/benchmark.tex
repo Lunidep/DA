@@ -1,0 +1,28 @@
+\section{Тест производительности}
+Тест производиительности представляет собой сравнение реализованного мной алгоритма Укконена и STL find.\newline
+
+Сравнение производится путем запуска поиска 400000 паттернов в тексте.\newline
+
+В результате работы $benchmark.cpp$ видны следующие результаты:\newline
+
+\begin{alltt}
+root@Lunidep:~/DA/da_lab5# ./wrapper.sh 
+[info][Mon Oct  3 22:29:56 MSK 2022] Stage #1. Compiling...
+g++ -std=c++11 -pedantic -Wextra -Wall -Werror -Wno-sign-compare -Wno-unused-result  -o da_lab5 TSuffixTree.cpp main.cpp
+g++ -std=c++11 -pedantic -Wextra -Wall -Werror -Wno-sign-compare -Wno-unused-result  -o benchmark TSuffixTree.cpp benchmark.cpp 
+[info][Mon Oct  3 22:29:58 MSK 2022] Compiling OK
+[info][Mon Oct  3 22:29:58 MSK 2022] Stage #2. Benchmark generating...
+[info][Mon Oct  3 22:29:58 MSK 2022] Benchmark generating OK
+[info][Mon Oct  3 22:29:58 MSK 2022] Stage #3. Program testing...
+1: 1
+2: 2
+3: 2, 6
+[info][Mon Oct  3 22:29:58 MSK 2022] Program testing OK
+[info][Mon Oct  3 22:29:58 MSK 2022] Stage #4. Benchmark results:
+Time for create suffix tree: 67226 ms
+Time for my find: 96589162 ms
+Time for standart find: 196576595 ms
+[info][Mon Oct  3 22:29:59 MSK 2022] Benchmark OK
+\end{alltt}
+
+\pagebreak
