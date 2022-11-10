@@ -1,0 +1,18 @@
+\section{Тест производительности}
+
+Тест производительности представляет собой сравнение реализованного мной метода
+динамического программирования за O(n) и наивного алгоритма.\newline
+
+Сравнение производится путем запуска запуска теста на двух больших тестах.
+В результате работы benchmark.cpp видны следующие результаты:
+
+\begin{alltt}
+root@Lunidep:~/Desktop/DA/lab7$ make
+g++ benchmark.o -o solution
+root@Lunidep:~/Desktop/DA/lab7$ ./solution <test.txt
+1000000
+Search time DP = 0.014698
+Search time default = 1.03052
+\end{alltt}
+
+\pagebreak

@@ -1,0 +1,54 @@
+\section{Описание}
+
+\textbf{Жадный алгоритм} — алгоритм, заключающийся в принятии локально оптимальных решений на каждом этапе, допуская, что конечное решение также окажется оптимальным. Известно, что если структура задачи задается матроидом, тогда применение жадного алгоритма выдаст глобальный оптимум.
+
+Если глобальная оптимальность алгоритма имеет место практически всегда, его обычно предпочитают другим методам оптимизации, таким как динамическое программирование.\newline
+\pagebreak
+
+\section{Исходный код}
+Фрагмент кода, где применяются рекуррентные формулы:\newline
+
+
+\begin{lstlisting}[language=C++]
+for (int i = 0; i < N; ++i) {
+        int minimal_price = DEFAULT_MINIMAL_PRICE; //недостижимая цена
+        int row = DEFAULT_VALUE; //строка с минимальной стоимостью
+        int mtx_line_number = DEFAULT_VALUE; //номер считанной строки
+        int price = N;
+        for (int j = i; j < M; ++j) {
+            if (mtx[j][i] != 0 && mtx[j][price] < minimal_price) {
+                minimal_price = mtx[j][price];
+                row = j;
+            }
+        }
+        if (row == -1) {
+            cout << -1 << endl;
+            return 0;
+        }
+        mtx_line_number = mtx[row][price + 1];
+        answer.push_back(mtx_line_number);
+        mtx[i].swap(mtx[row]);
+        for (int k = i + 1; k < M; ++k) {
+            double m = mtx[k][i] / mtx[i][i];
+            for (int v = i; v < N; ++v) {
+                mtx[k][v] -= mtx[i][v] * m;
+            }
+        }
+    }
+
+\end{lstlisting}
+
+\section{Консоль}
+tmp:
+\begin{alltt}
+3 3
+1 0 2 3
+1 0 2 4
+2 0 1 2
+\end{alltt}
+
+console output:
+\begin{alltt}
+-1
+\end{alltt}
+\pagebreak
