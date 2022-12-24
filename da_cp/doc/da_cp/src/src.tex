@@ -1,0 +1,152 @@
+\section{Описание}
+
+\textbf{Поиск A*} (произносится «А звезда» или «А стар», от англ. A star) — в информатике и математике, алгоритм поиска по первому наилучшему совпадению на графе, который находит маршрут с наименьшей стоимостью от одной вершины (начальной) к другой (целевой, конечной).\newline
+
+Порядок обхода вершин определяется эвристической функцией «расстояние + стоимость» (обычно обозначаемой как f(x)). Эта функция — сумма двух других: функции стоимости достижения рассматриваемой вершины (x) из начальной (обычно обозначается как g(x) и может быть как эвристической, так и нет), и функции эвристической оценки расстояния от рассматриваемой вершины к конечной (обозначается как h(x)).\newline
+
+Функция h(x) должна быть допустимой эвристической оценкой, то есть не должна переоценивать расстояния к целевой вершине. Например, для задачи маршрутизации h(x) может представлять собой расстояние до цели по прямой линии, так как это физически наименьшее возможное расстояние между двумя точками.\newline
+
+Этот алгоритм был впервые описан в 1968 году Питером Хартом, Нильсом Нильсоном и Бертрамом Рафаэлем. Это по сути было расширение алгоритма Дейкстры, созданного в 1959 году. Новый алгоритм достигал более высокой производительности (по времени) с помощью эвристики. В их работе он упоминается как «алгоритм A». Но так как он вычисляет лучший маршрут для заданной эвристики, он был назван A*.\newline
+\pagebreak
+
+\section{Исходный код}
+
+\begin{lstlisting}[language=C++]
+#include <bits/stdc++.h>
+
+using namespace std;
+using ll = long long; 
+
+#define endl '\n';
+
+struct coords {
+    double x;
+    double y;
+};
+
+inline double euclid_dist(ll u, ll v, const vector<coords>& vert) {
+    coords v1 = vert[u];
+    coords v2 = vert[v];
+    
+    return sqrt((v1.x - v2.x) * (v1.x - v2.x) + (v1.y - v2.y) * (v1.y - v2.y));
+}
+
+struct node {
+    ll ind;
+    double path;
+    
+    node(const ll _ind, const double _path) {
+        ind = _ind;
+        path = _path;
+    }
+
+    friend bool operator< (const node& v1, const node& v2) {
+        if (v1.path != v2.path)
+            return v1.path > v2.path;
+        return v1.ind < v2.ind;
+    }
+};
+
+double solve(const ll start, const ll finish, const vector<coords> &vert, const vector<vector<ll>> &graph) {
+    vector<double> res(vert.size(), DBL_MAX);//используем вектор расстояний в том числе, как вектор посещенных вершин
+    vector<double> dist(vert.size(), DBL_MAX);
+    priority_queue<node> pq;
+
+    res[start] = 0; //расстояние до стартовой вершины
+    dist[start] = res[start] + euclid_dist(start, finish, vert);
+    pq.push(node(start, dist[start]));
+    
+    while (!pq.empty()) {
+        node tmp = pq.top();
+        pq.pop();
+
+        if (tmp.ind == finish)//конечная вершина
+            break;
+
+        if (tmp.path > dist[tmp.ind])
+            continue;
+
+        for (auto next : graph[tmp.ind]){//соседи рассматриваемой вершины
+
+            if (res[next] == DBL_MAX || (res[tmp.ind] + euclid_dist(tmp.ind, next, vert)) < res[next]){
+                res[next] = res[tmp.ind] + euclid_dist(tmp.ind, next, vert);
+                dist[next] = res[next] + euclid_dist(next, finish, vert);
+
+                pq.push(node(next, dist[next]));
+            }
+        }
+    }
+    return res[finish];
+}
+
+int main() {
+    ios_base::sync_with_stdio(false);
+    cin.tie(nullptr); cout.tie(nullptr);
+
+    ll n, m;
+    cin >> n >> m;
+    vector<coords> vert(n);
+    vector<vector<ll>> graph(n);
+
+    for (ll i = 0; i < n; ++i)
+        cin >> vert[i].x >> vert[i].y;
+
+    for (ll i = 0; i < m; ++i) {
+        ll u, v;
+        cin >> u >> v;
+        u--; v--;
+        graph[u].push_back(v);
+        graph[v].push_back(u);
+    }
+
+    ll q;
+    cin >> q;
+
+    while(q--) {
+        ll u, v;
+        cin >> u >> v;
+        u--; v--;
+        double ans = solve(u, v, vert, graph);
+        if (ans != DBL_MAX){
+            cout << fixed << setprecision(6) << ans << endl;
+        }
+        else{
+            cout << -1 << endl;
+        }
+    }
+    return 0;
+}
+\end{lstlisting}
+
+\section{Консоль}
+console input:
+\begin{alltt}
+4 5
+0 0
+1 1
+-1 1
+0 2
+1 2
+1 3
+2 4
+3 4
+1 4
+1
+1 4
+
+\end{alltt}
+console output:
+\begin{alltt}
+2.000000
+\end{alltt}
+\pagebreak
+
+\section{Оценка сложности}
+Временная сложность алгоритма A* зависит от эвристики. В худшем случае, число вершин, исследуемых алгоритмом, растёт экспоненциально по сравнению с длиной оптимального пути, но сложность становится полиномиальной, когда эвристика удовлетворяет следующему условию:\newline
+
+${\displaystyle |h(x)-h^{*}(x)|\leq O(\log h^{*}(x))}|h(x)-h^{*}(x)|\leq O(\log h^{*}(x))$;\newline
+где h* — оптимальная эвристика, то есть точная оценка расстояния из вершины x к цели. Другими словами, ошибка h(x) не должна расти быстрее, чем логарифм от оптимальной эвристики.\newline
+
+Но ещё бо́льшую проблему, чем временна́я сложность, представляют собой потребляемые алгоритмом ресурсы памяти. В худшем случае ему приходится помнить экспоненциальное количество узлов. \newline
+
+\pagebreak
